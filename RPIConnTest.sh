@@ -1,16 +1,17 @@
 #!/bin/bash
+pin=26
 Break=180
 Sleep=11
 pingpadding=30 # if no response ping takes longer to run
 log=/var/log/connTest
 pinglog=/tmp/ping.log
+gpiopindir=/sys/class/gpio/gpio$pin
 #
-# one-time setup of our GPIO pin so we can control it
-pin=26
-cd /sys/class/gpio
-echo $pin > export
-cd gpio$pin
-echo out > direction
+# one-time setup of our GPIO pin so we can control it - comment after first test run
+#cd /sys/class/gpio
+#echo $pin > export
+#cd gpio$pin
+#echo out > direction
 
 # divert STDOUT and STDERR to log file
 exec 1>>$log
@@ -33,10 +34,10 @@ try1=$(curl -is --connect-timeout 6 www.google.com|wc -c)
     ping -c $Break 1.1.1.1 > $pinglog 2>&1 &
 
 # this will shut power off
-    echo 1 > value
+    echo 1 > $gpiopindir/value
     sleep 20
 # and this will turn it back on
-    echo 0 > value
+    echo 0 > $gpiopindir/value
 # this prevents us from too aggressively power-cycling
     sleep 180
 # report on ping results
